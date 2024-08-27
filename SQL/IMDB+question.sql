@@ -14,12 +14,12 @@ USE imdb;
 -- Q1. Find the total number of rows in each table of the schema?
 -- Type your code below:
 
-
-
-
-
-
-
+select count(*) from director_mapping;
+select count(*) from genre;
+select count(*) from movie;
+select count(*) from names;
+select count(*) from ratings;
+select count(*) from role_mapping;
 
 
 -- Q2. Which columns in the movie table have null values?
