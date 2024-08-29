@@ -223,23 +223,24 @@ Lets find where the movies of genre 'thriller' on the basis of number of movies.
 
 
 WITH genre_summary AS (
-	SELECT 
-		genre, COUNT(movie_id) AS movie_count
-	FROM 
-		genre
-	GROUP BY 
-		genre
+    SELECT 
+        genre,
+        COUNT(movie_id) AS movie_count,
+        RANK() OVER (ORDER BY COUNT(movie_id) DESC) AS genre_rank
+    FROM 
+        genre
+    GROUP BY 
+        genre
 )
+SELECT 
+    *
+FROM 
+    genre_summary
+WHERE 
+    genre = 'THRILLER';
 
-SELECT
-	genre,
-	COUNT(movie_id) AS movie_count,
+-- Thriller genre has the highest number of movies with a rank of 3
 	
-
-
-
-
-
 
 
 /*Thriller movies is in top 3 among all genres in terms of number of movies
@@ -265,6 +266,16 @@ To start with lets get the min and max values of different columns in the table*
 -- Type your code below:
 
 
+SELECT 
+    MIN(avg_rating) AS min_avg_rating,
+    MAX(avg_rating) AS max_avg_rating,
+    MIN(total_votes) AS min_total_votes,
+    MAX(total_votes) AS max_total_votes,
+    MIN(median_rating) AS min_median_rating,
+    MAX(median_rating) AS max_median_rating
+FROM 
+    ratings;
+
 
 
 
@@ -289,6 +300,17 @@ Now, let’s find out the top 10 movies based on average rating.*/
 -- It's ok if RANK() or DENSE_RANK() is used too
 
 
+SELECT 
+    m.title,
+    r.avg_rating,
+    RANK() OVER (ORDER BY r.avg_rating DESC) AS movie_rank
+FROM 
+    ratings AS r
+INNER JOIN 
+    movie AS m
+ON 
+    m.id = r.movie_id
+LIMIT 10;
 
 
 
@@ -313,11 +335,11 @@ Summarising the ratings table based on the movie counts by median rating can giv
 -- Order by is good to have
 
 
-
-
-
-
-
+SELECT median_rating,
+       count(*) AS movie_count
+FROM   ratings
+GROUP  BY median_rating
+ORDER  BY movie_count DESC; 
 
 
 
@@ -334,7 +356,35 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 -- Type your code below:
 
 
+WITH ranked_companies AS (
+    SELECT 
+        m.production_company,
+        COUNT(r.movie_id) AS movie_count,
+        RANK() OVER (ORDER BY COUNT(r.movie_id) DESC) AS prod_company_rank
+    FROM 
+        ratings AS r
+    INNER JOIN 
+        movie AS m
+    ON 
+        m.id = r.movie_id
+    WHERE 
+        r.avg_rating > 8
+        AND m.production_company IS NOT NULL
+    GROUP BY 
+        m.production_company
+)
+SELECT 
+    production_company,
+    movie_count,
+    prod_company_rank
+FROM 
+    ranked_companies
+WHERE 
+    prod_company_rank = 1;
 
+
+
+-- Dream Warrior Pictures or National Theatre Live or both are rank 1
 
 
 
@@ -356,7 +406,30 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 +---------------+-------------------+ */
 -- Type your code below:
 
+SELECT 
+    g.genre,
+    COUNT(m.id) AS movie_count
+FROM 
+    movie AS m
+INNER JOIN 
+    genre AS g
+ON 
+    g.movie_id = m.id
+INNER JOIN 
+    ratings AS r
+ON 
+    r.movie_id = m.id
+WHERE 
+    m.year = 2017
+    AND MONTH(m.date_published) = 3
+    AND m.country LIKE '%USA%'
+    AND r.total_votes > 1000
+GROUP BY 
+    g.genre
+ORDER BY 
+    movie_count DESC;
 
+-- Drama genre has the highest number of movies released in March 2017 in the USA had more than 1,000 votes
 
 
 
@@ -379,7 +452,30 @@ Now, let's find out the production house with which RSVP Movies can partner for 
 
 
 
+SELECT 
+    m.title,
+    r.avg_rating,
+    g.genre
+FROM 
+    movie AS m
+INNER JOIN 
+    genre AS g
+ON 
+    g.movie_id = m.id
+INNER JOIN 
+    ratings AS r
+ON 
+    r.movie_id = m.id
+WHERE 
+    r.avg_rating > 8
+    AND m.title LIKE 'THE%'
+GROUP BY 
+    m.title, r.avg_rating, g.genre
+ORDER BY 
+    r.avg_rating DESC;
 
+
+-- The Brighton Miracle has the highest average rating
 
 
 
