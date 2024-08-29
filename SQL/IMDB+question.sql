@@ -26,9 +26,18 @@ select count(*) from role_mapping;
 -- Type your code below:
 
 
-
-
-
+SELECT 
+    COUNT(*) - COUNT(id) AS ID_NULL_COUNT,
+    COUNT(*) - COUNT(title) AS title_NULL_COUNT,
+    COUNT(*) - COUNT(year) AS year_NULL_COUNT,
+    COUNT(*) - COUNT(date_published) AS date_published_NULL_COUNT,
+    COUNT(*) - COUNT(duration) AS duration_NULL_COUNT,
+    COUNT(*) - COUNT(country) AS country_NULL_COUNT,
+    COUNT(*) - COUNT(worldwide_gross_income) AS worldwide_gross_income_NULL_COUNT,
+    COUNT(*) - COUNT(languages) AS languages_NULL_COUNT,
+    COUNT(*) - COUNT(production_company) AS production_company_NULL_COUNT
+FROM 
+    movie;
 
 
 
@@ -57,13 +66,24 @@ Output format for the second part of the question:
 +---------------+-------------------+ */
 -- Type your code below:
 
+-- Number of movies released each year
+SELECT year,
+       Count(title) AS number_of_movies
+FROM   movie
+GROUP  BY year;
 
+-- 2017	3052
+-- 2018	2944
+-- 2019	2001
 
+-- Month wise trend
+SELECT Month(date_published) AS month_num,
+       Count(*)              AS number_of_movies
+FROM   movie
+GROUP  BY month_num
+ORDER  BY month_num; 
 
-
-
-
-
+-- March is the month with the highest number of movies released
 
 
 /*The highest number of movies is produced in the month of March.
@@ -74,12 +94,13 @@ We know USA and India produces huge number of movies each year. Lets find the nu
 -- Type your code below:
 
 
+SELECT Count(DISTINCT id) AS number_of_movies, year
+FROM   movie
+WHERE  ( country LIKE '%INDIA%'
+          OR country LIKE '%USA%' )
+       AND year = 2019; 
 
-
-
-
-
-
+-- 1059 movies 
 
 
 /* USA and India produced more than a thousand movies(you know the exact number!) in the year 2019.
@@ -90,12 +111,10 @@ Let’s find out the different genres in the dataset.*/
 -- Type your code below:
 
 
+SELECT DISTINCT genre
+FROM genre;
 
-
-
-
-
-
+--13 distinct genres
 
 
 /* So, RSVP Movies plans to make a movie of one of these genres.
@@ -107,10 +126,23 @@ Combining both the movie and genres table can give more interesting insights. */
 
 
 
+SELECT 
+    g.genre,
+    COUNT(m.id) AS number_of_movies
+FROM 
+    movie AS m
+INNER JOIN 
+    genre AS g
+ON 
+    g.movie_id = m.id
+GROUP BY 
+    g.genre
+ORDER BY 
+    number_of_movies DESC 
+LIMIT 1;
 
 
-
-
+-- Drama genre has the highest number of movies produced with a count of 4285
 
 
 
@@ -123,11 +155,22 @@ So, let’s find out the count of movies that belong to only one genre.*/
 
 
 
+WITH movies_with_one_genre AS (
+    SELECT 
+        movie_id
+    FROM 
+        genre
+    GROUP BY 
+        movie_id
+    HAVING 
+        COUNT(DISTINCT genre) = 1
+)
+SELECT 
+    COUNT(*) AS movies_with_one_genre
+FROM 
+    movies_with_one_genre;
 
-
-
-
-
+-- 3289 movies belong to only one genre
 
 
 /* There are more than three thousand movies which has only one genre associated with them.
@@ -150,9 +193,15 @@ Now, let's find out the possible duration of RSVP Movies’ next project.*/
 -- Type your code below:
 
 
+select genre, avg(duration) as avg_duration
+from genre as g
+join movie as m
+on g.movie_id = m.id
+group by genre
+order by avg_duration desc;
 
 
-
+-- Action genre has the highest average duration of 112.88
 
 
 
@@ -173,7 +222,19 @@ Lets find where the movies of genre 'thriller' on the basis of number of movies.
 -- Type your code below:
 
 
+WITH genre_summary AS (
+	SELECT 
+		genre, COUNT(movie_id) AS movie_count
+	FROM 
+		genre
+	GROUP BY 
+		genre
+)
 
+SELECT
+	genre,
+	COUNT(movie_id) AS movie_count,
+	
 
 
 
